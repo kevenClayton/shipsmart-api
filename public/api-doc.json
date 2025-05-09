@@ -1,0 +1,238 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ShipSmart API",
+    "version": "1.0.0",
+    "description": "API para gerenciamento de contatos com m\u00faltiplos endere\u00e7os."
+  },
+  "paths": {
+    "/api/contatos": {
+      "get": {
+        "summary": "Listar contatos",
+        "responses": {
+          "200": {
+            "description": "Lista de contatos com indicadores",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dados": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Contato"
+                      }
+                    },
+                    "indicadores": {
+                      "$ref": "#/components/schemas/Indicadores"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Cadastrar novo contato",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContatoInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contato cadastrado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contato"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contatos/{id}": {
+      "put": {
+        "summary": "Atualizar contato",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContatoInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contato atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contato"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Excluir contato",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contato exclu\u00eddo com sucesso"
+          }
+        }
+      }
+    },
+    "/api/exportar-excel": {
+      "get": {
+        "summary": "Exportar contatos para Excel",
+        "parameters": [
+          {
+            "name": "tipoExportacao",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Contato"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Arquivo Excel exportado",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Contato": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "enderecos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Endereco"
+            }
+          }
+        }
+      },
+      "ContatoInput": {
+        "type": "object",
+        "required": [
+          "nome",
+          "email"
+        ],
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "enderecos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Endereco"
+            }
+          }
+        }
+      },
+      "Endereco": {
+        "type": "object",
+        "properties": {
+          "cep": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "cidade": {
+            "type": "string"
+          },
+          "bairro": {
+            "type": "string"
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          },
+          "complemento": {
+            "type": "string"
+          }
+        }
+      },
+      "Indicadores": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "com_endereco": {
+            "type": "integer"
+          },
+          "com_telefone": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
