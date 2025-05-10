@@ -4,21 +4,26 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ExportarExcel;
 use Carbon\Carbon;
+use App\Services\ExportacaoService;
 
 class ExportacaoExcelController extends Controller
 {
+    protected $contato;
+    protected $exportacaoServico;
+    public function __construct(ExportacaoService $exportacaoServico)
+    {
+        $this->exportacaoServico = $exportacaoServico;
+    }
     public function exportar(Request $request)
     {
-        $modelName = $request->get('tipoExportacao'); // Obtenha o nome da classe do modelo
-        $model = "App\\Models\\{$modelName}"; // Crie o nome completo da classe do model
-        if (!class_exists($model)) {
-            return response()->json(['error' => 'Não encontrado'], 404);
+        $modelNome = $request->get('tipoExportacao');
+        if (!$this->exportacaoServico->modeloEhValido($modelNome)) {
+            return response()->json(['error' => 'Tipo de exportação inválido.'], 400);
         }
+
         $horarioAtualExportal = Carbon::now()->format('d-m-y h_m');
-        $nomeArquivo = $modelName.'-'.$horarioAtualExportal.'-.xlsx';
-        return Excel::download(new ExportarExcel($modelName, $request), $nomeArquivo);
+        $nomeArquivo = $modelNome . '-' . $horarioAtualExportal . '-.xlsx';
+        return $this->exportacaoServico->gerarExcel($modelNome, $request, $nomeArquivo);
     }
 }

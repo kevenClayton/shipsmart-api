@@ -41,7 +41,15 @@ class ContatoRepository implements ContatoRepositoryInterface
         $contato->update($data);
         if (!empty($enderecos)) {
             foreach ($enderecos as $endereco) {
-                $contato->enderecos()->updateOrCreate(['codigo' => $endereco['codigo']], $endereco);
+                if (isset($endereco['codigo'])) {
+                    $contato->enderecos()
+                        ->updateOrCreate(
+                            ['codigo' => $endereco['codigo']],
+                            $endereco
+                        );
+                } else {
+                    $contato->enderecos()->create($endereco);
+                }
             }
         }
         return $contato;

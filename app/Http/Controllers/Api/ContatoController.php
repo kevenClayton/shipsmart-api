@@ -6,31 +6,32 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ContatoRequest;
 use App\Http\Requests\ContatoAtualizarRequest;
 use App\Repositories\Interfaces\ContatoRepositoryInterface;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\ContatoCriadoMail;
+use App\Services\ContatoService;
 
 class ContatoController extends Controller
 {
-    protected $contatos;
-    public function __construct(ContatoRepositoryInterface $contatos)
+    protected $contato;
+    protected $contatoServico;
+    public function __construct(ContatoRepositoryInterface $contato, ContatoService $contatoService)
     {
 
-        $this->contatos =  $contatos;
+        $this->contato =  $contato;
+        $this->contatoServico = $contatoService;
     }
 
     public function indicadores()
     {
-        $indicadores = $this->contatos->obterIndicadores();
+        $indicadores = $this->contato->obterIndicadores();
         return response()->json($indicadores);
     }
     public function listar()
     {
-        $contatos = $this->contatos->obterTodos();
+        $contatos = $this->contato->obterTodos();
         return response()->json($contatos);
     }
     public function buscar($codigo)
     {
-        $contato = $this->contatos->buscarPorCodigo($codigo);
+        $contato = $this->contato->buscarPorCodigo($codigo);
         if (!$contato) {
             return response()->json(['message' => 'Contato não encontrado'], 404);
         }
@@ -40,10 +41,8 @@ class ContatoController extends Controller
     {
         $data = $request->except('enderecos');
         $enderecos = $request->input('enderecos');
-        $contato = $this->contatos->criar($data, $enderecos);
-
-        Mail::to(env('NOTIFICATION_MAIL'))
-            ->queue((new ContatoCriadoMail($contato))->onQueue('back_emails'));
+        $contato = $this->contato->criar($data, $enderecos);
+        $this->contatoServico->enviarNotificacaoContatoCriado($contato);
 
         return response()->json($contato, status: 200);
     }
@@ -52,7 +51,7 @@ class ContatoController extends Controller
     {
         $data = $request->except('enderecos');
         $enderecos = $request->input('enderecos');
-        $contato = $this->contatos->atualizar($codigo, $data, $enderecos);
+        $contato = $this->contato->atualizar($codigo, $data, $enderecos);
         if (!$contato) {
             return response()->json(['message' => 'Contato não encontrado'], 404);
         }
@@ -60,7 +59,7 @@ class ContatoController extends Controller
     }
     public function apagar($codigo)
     {
-        $contato = $this->contatos->apagar($codigo);
+        $contato = $this->contato->apagar($codigo);
         if (!$contato) {
             return response()->json(['message' => 'Contato não encontrado'], 404);
         }
